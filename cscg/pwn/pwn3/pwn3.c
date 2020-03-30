@@ -85,7 +85,7 @@ void AAAAAAAA() {
     printf(" enter your magic spell:\n");
     gets(read_buf);
     if(strcmp(read_buf, "Expelliarmus") == 0) {
-        printf("~ Protego!\n");
+        printf("~ Protego!\n"); 
     } else {
         printf("-10 Points for Gryffindor!\n");
         _exit(0);

